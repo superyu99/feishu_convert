@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown 实时转换工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            height: 100vh;
+        }
+        .container {
+            width: 47%;
+            display: flex;
+            flex-direction: column;
+        }
+        textarea {
+            width: 90%;
+            height: 80vh;
+            padding: 15px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: none;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>原始 Markdown</h2>
+        <textarea id="inputMarkdown" placeholder="在这里输入原始Markdown文本"></textarea>
+    </div>
+    <div class="container">
+        <h2>转换后 Markdown</h2>
+        <textarea id="outputMarkdown" readonly placeholder="转换后的Markdown会自动显示在这里"></textarea>
+    </div>
+
+<script>
+    function convertMarkdown(text) {
+        // 1. 转换行内公式 \( ... \) 为 $$ ... $$ 并确保前后有空格
+        text = text.replace(/\\\((.+?)\\\)/g, ' $$ $1 $$ ');
+
+        // 2. 转换块级公式 \[ ... \] 为 $$ ... $$ 并确保格式正确
+        text = text.replace(/\\\[\s*([\s\S]+?)\s*\\\]/g, ' $$\n$1\n$$ ');
+
+        // 3. 清理$$前后空格（防止重复空格）
+        text = text.replace(/\s*\$\$\s*/g, ' $$ ');
+
+        // 4. 删除所有用于加粗的 **，但保留单个 *
+        text = text.replace(/\*\*(.+?)\*\*/g, '$1');
+
+        // 5. 清除多余空格（多个空格合并为一个）
+        text = text.replace(/ {2,}/g, ' ').trim();
+
+        return text;
+    }
+
+    document.getElementById('inputMarkdown').addEventListener('input', function() {
+        const input = this.value;
+        const output = convertMarkdown(input);
+        document.getElementById('outputMarkdown').value = output;
+    });
+</script>
+</body>
+</html>
