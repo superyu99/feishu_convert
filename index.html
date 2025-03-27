@@ -48,20 +48,17 @@
 
 <script>
     function convertMarkdown(text) {
-        // 1. 转换行内公式 \( ... \) 为 $$ ... $$ 并确保前后有空格
-        text = text.replace(/\\\((.+?)\\\)/g, ' $$ $1 $$ ');
+        // 1. 转换行内公式 \( ... \) 为 $$ ... $$，并确保前后有空格，不影响行结构
+        text = text.replace(/\\\((.+?)\\\)/g, (_, content) => ` $$ ${content} $$ `);
 
-        // 2. 转换块级公式 \[ ... \] 为 $$ ... $$ 并确保格式正确
-        text = text.replace(/\\\[\s*([\s\S]+?)\s*\\\]/g, ' $$\n$1\n$$ ');
+        // 2. 转换块级公式 \[ ... \] 为 $$ ... $$，并确保前后有空格，不改变换行结构
+        text = text.replace(/\\\[\s*([\s\S]+?)\s*\\\]/g, (_, content) => ` $$ ${content} $$ `);
 
-        // 3. 清理$$前后空格（防止重复空格）
-        text = text.replace(/\s*\$\$\s*/g, ' $$ ');
-
-        // 4. 删除所有用于加粗的 **，但保留单个 *
+        // 3. 删除所有用于加粗的 **，保留单个 *
         text = text.replace(/\*\*(.+?)\*\*/g, '$1');
 
-        // 5. 清除多余空格（多个空格合并为一个）
-        text = text.replace(/ {2,}/g, ' ').trim();
+        // 4. 清除多余空格（不清除换行，只压缩一行内多个空格）
+        text = text.split('\n').map(line => line.replace(/ {2,}/g, ' ').trim()).join('\n');
 
         return text;
     }
@@ -74,3 +71,4 @@
 </script>
 </body>
 </html>
+
