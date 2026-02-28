@@ -1,74 +1,51 @@
-<!DOCTYPE html>
-<html lang="zh">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>Markdown 实时转换工具</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-            height: 100vh;
-        }
-        .container {
-            width: 47%;
-            display: flex;
-            flex-direction: column;
-        }
-        textarea {
-            width: 90%;
-            height: 80vh;
-            padding: 15px;
-            font-size: 16px;
-            line-height: 1.5;
-            resize: none;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: white;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>飞书 Markdown 公式格式转换</title>
+  <style>
+    body { margin: 0; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background: #f5f7fb; color: #1f2937; }
+    .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; height: 100vh; box-sizing: border-box; }
+    .panel { background: #fff; border: 1px solid #dbe2f0; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; min-height: 0; }
+    h2 { margin: 0 0 10px; font-size: 16px; }
+    textarea { flex: 1; width: 100%; resize: none; border: 1px solid #cfd8ea; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; box-sizing: border-box; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 8px; }
+    button { border: 1px solid #c6d2eb; background: #eef3ff; border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+    button:hover { background: #dde8ff; }
+    @media (max-width: 960px) { .wrap { grid-template-columns: 1fr; height: auto; } .panel { min-height: 42vh; } }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>原始 Markdown</h2>
-        <textarea id="inputMarkdown" placeholder="在这里输入原始Markdown文本"></textarea>
-    </div>
-    <div class="container">
-        <h2>转换后 Markdown</h2>
-        <textarea id="outputMarkdown" readonly placeholder="转换后的Markdown会自动显示在这里"></textarea>
-    </div>
+  <div class="wrap">
+    <section class="panel">
+      <h2>输入（粘贴原始文本）</h2>
+      <div class="toolbar">
+        <button id="convertBtn">转换</button>
+        <button id="clearBtn">清空</button>
+      </div>
+      <textarea id="input" placeholder="在这里粘贴原始文本..."></textarea>
+    </section>
+    <section class="panel">
+      <h2>输出（飞书可粘贴 Markdown）</h2>
+      <div class="toolbar">
+        <button id="copyBtn">复制输出</button>
+      </div>
+      <textarea id="output" readonly placeholder="转换结果将显示在这里..."></textarea>
+    </section>
+  </div>
 
-<script>
-    function convertMarkdown(text) {
-        // 1. 转换行内公式 \( ... \) 为 $$ ... $$，并确保前后有空格，不影响行结构
-        text = text.replace(/\\\((.+?)\\\)/g, (_, content) => ` $$ ${content} $$ `);
-
-        // 2. 转换块级公式 \[ ... \] 为 $$ ... $$，并确保前后有空格，不改变换行结构
-        text = text.replace(/\\\[\s*([\s\S]+?)\s*\\\]/g, (_, content) => ` $$ ${content} $$ `);
-
-        // 3. 删除所有用于加粗的 **，保留单个 *
-        text = text.replace(/\*\*(.+?)\*\*/g, '$1');
-
-        // 4. 清除多余空格（不清除换行，只压缩一行内多个空格）
-        text = text.split('\n').map(line => line.replace(/ {2,}/g, ' ').trim()).join('\n');
-
-        return text;
-    }
-
-    document.getElementById('inputMarkdown').addEventListener('input', function() {
-        const input = this.value;
-        const output = convertMarkdown(input);
-        document.getElementById('outputMarkdown').value = output;
+  <script src="./converter.js"></script>
+  <script>
+    const inputEl = document.getElementById('input');
+    const outputEl = document.getElementById('output');
+    const convert = () => { outputEl.value = window.convertToFeishuMarkdown(inputEl.value); };
+    document.getElementById('convertBtn').addEventListener('click', convert);
+    document.getElementById('clearBtn').addEventListener('click', () => { inputEl.value = ''; outputEl.value = ''; });
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(outputEl.value || '');
     });
-</script>
+    inputEl.addEventListener('input', convert);
+  </script>
 </body>
 </html>
-
